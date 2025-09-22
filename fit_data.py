@@ -126,9 +126,9 @@ def train_model(args):
         voxels_src = torch.rand(feed_cuda['voxels'].shape,requires_grad=True, device=args.device)
         voxel_coords = feed_cuda['voxel_coords'].unsqueeze(0)
         voxels_tgt = feed_cuda['voxels']
-
         # fitting
         fit_voxel(voxels_src, voxels_tgt, args)
+        return voxels_src, voxels_tgt
 
 
     elif args.type == "point":
@@ -138,7 +138,8 @@ def train_model(args):
         pointclouds_tgt = sample_points_from_meshes(mesh_tgt, args.n_points)
 
         # fitting
-        fit_pointcloud(pointclouds_src, pointclouds_tgt, args)        
+        fit_pointcloud(pointclouds_src, pointclouds_tgt, args)   
+        return pointclouds_src, pointclouds_tgt     
     
     elif args.type == "mesh":
         # initialization
@@ -147,12 +148,8 @@ def train_model(args):
         mesh_tgt = Meshes(verts=[feed_cuda['verts']], faces=[feed_cuda['faces']])
 
         # fitting
-        fit_mesh(mesh_src, mesh_tgt, args)        
-
-
-    
-    
-
+        fit_mesh(mesh_src, mesh_tgt, args)     
+        return mesh_src, mesh_tgt
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Model Fit', parents=[get_args_parser()])

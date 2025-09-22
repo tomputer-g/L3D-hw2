@@ -1,6 +1,6 @@
 import torch
 from pytorch3d.ops.knn import knn_points, knn_gather
-
+from pytorch3d.loss import mesh_laplacian_smoothing
 # define losses
 def voxel_loss(voxel_src, voxel_tgt):
 	# voxel_src: b x h x w x d
@@ -37,6 +37,7 @@ def chamfer_loss(point_cloud_src,point_cloud_tgt):
 def smoothness_loss(mesh_src):
 	# loss_laplacian = 
 	# implement laplacian smoothening loss
-
+	#TODO replace this when they respond to piazza
+	loss_laplacian = mesh_laplacian_smoothing(mesh_src)
 	# Can use predefined loss from pytorch
 	return loss_laplacian
