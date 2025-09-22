@@ -10,7 +10,8 @@ def voxel_loss(voxel_src, voxel_tgt):
 	# Can use predefined loss from pytorch
 	# Maximize log likelihod L06 P49
 	# -wn (y log x + (1-y) log(1-x))
-	loss_fn = torch.nn.BCELoss(reduction='mean')
+	# loss_fn = torch.nn.BCELoss(reduction='mean')
+	loss_fn = torch.nn.BCEWithLogitsLoss(reduction='mean')
 	loss = loss_fn(voxel_src, voxel_tgt)
 	return loss
 
