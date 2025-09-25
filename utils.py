@@ -42,6 +42,10 @@ def add_texture_to_mesh(mesh: pytorch3d.structures.Meshes):
     mesh.textures = TexturesVertex([textures]).to(verts.device)
     return mesh
 
+def get_color_pointcloud(pointcloud: torch.Tensor):
+    return torch.ones_like(pointcloud).to(pointcloud.device) * torch.tensor([0.7,0.7,1], device=pointcloud.device)
+
+
 def render_vox_to_mesh(vox: torch.Tensor): # -> pytorch3d.structures.Meshes:
     # print(vox.shape) #1, 32, 32, 32
     # H,W,D = vox.shape[1:]

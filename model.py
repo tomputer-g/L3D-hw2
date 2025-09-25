@@ -19,6 +19,8 @@ class SingleViewto3D(nn.Module):
         if args.type == "vox":
             # Input: b x 512
             # Output: b x 32 x 32 x 32
+
+            # Batch size: 16
             layers = []
             layers.append(torch.nn.Linear(512, 2048))
             layers.append(torch.nn.GELU())
@@ -36,7 +38,19 @@ class SingleViewto3D(nn.Module):
         elif args.type == "point":
             # Input: b x 512
             # Output: b x args.n_points x 3  
+
+            # Batch size 64, n_points 10k
             self.n_point = args.n_points
+            layers = []
+            layers.append(torch.nn.Linear(512, 2048))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(2048, 4096))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(4096, 8192))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(8192, self.n_point*3))
+            layers.append(torch.nn.Unflatten(1, (self.n_point,3)))
+            self.decoder = torch.nn.Sequential(*layers)
             # TODO:
             # self.decoder =             
         elif args.type == "mesh":
@@ -73,7 +87,7 @@ class SingleViewto3D(nn.Module):
 
         elif args.type == "point":
             # TODO:
-            # pointclouds_pred =             
+            pointclouds_pred = self.decoder(encoded_feat)
             return pointclouds_pred
 
         elif args.type == "mesh":

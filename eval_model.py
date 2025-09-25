@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from pytorch3d.transforms import Rotate, axis_angle_to_matrix
 import math
 import numpy as np
-from utils import render_vox_to_mesh, render_mesh_to_gif, add_texture_to_mesh
+from utils import render_vox_to_mesh, render_mesh_to_gif, add_texture_to_mesh, render_pointcloud_to_gif, get_color_pointcloud
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Singleto3D', add_help=False)
@@ -189,7 +189,8 @@ def evaluate_model(args):
                 # rend = rend.detach().cpu().numpy()[0, ..., :3].clip(0,1) * 255
                 # rend = rend.astype('uint8')
             elif args.type == 'point':
-                raise NotImplementedError
+                plt.imsave('debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
+                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=1, gif_path="debug_pred.gif")
             elif args.type == 'mesh':
                 raise NotImplementedError
 
