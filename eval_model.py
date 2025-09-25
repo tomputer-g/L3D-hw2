@@ -14,11 +14,12 @@ import matplotlib.pyplot as plt
 from pytorch3d.transforms import Rotate, axis_angle_to_matrix
 import math
 import numpy as np
+from utils import render_vox_to_mesh, render_mesh_to_gif, add_texture_to_mesh
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Singleto3D', add_help=False)
     parser.add_argument('--arch', default='resnet18', type=str)
-    parser.add_argument('--vis_freq', default=1000, type=int)
+    parser.add_argument('--vis_freq', default=100, type=int)
     parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--num_workers', default=0, type=int)
     parser.add_argument('--type', default='vox', choices=['vox', 'point', 'mesh'], type=str)
@@ -148,6 +149,14 @@ def evaluate_model(args):
         print(f"Succesfully loaded iter {start_iter}")
     
     print("Starting evaluating !")
+
+    # # Rendering stuff
+    
+    # if args.type == "vox" or args.type == 'mesh':
+    #     renderer = get_mesh_renderer(device=args.device)
+    # else: # args.type == 'point':
+    #     renderer = get_points_renderer(device=args.device)
+
     max_iter = len(eval_loader)
     for step in range(start_iter, max_iter):
         iter_start_time = time.time()
@@ -164,11 +173,27 @@ def evaluate_model(args):
 
         metrics = evaluate(predictions, mesh_gt, thresholds, args)
 
-        # TODO:
-        # if (step % args.vis_freq) == 0:
-        #     # visualization block
-        #     #  rend = 
-        #     plt.imsave(f'vis/{step}_{args.type}.png', rend)
+        if (step % args.vis_freq) == 0:
+            # visualization block
+            if args.type == "vox":
+                plt.imsave('debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
+                render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path="debug_actual.gif", azimuth_step=1)
+                
+                mesh = render_vox_to_mesh(predictions.squeeze(0))
+                render_mesh_to_gif(mesh,  gif_path="debug_pred.gif", azimuth_step=1)
+                # lights = pytorch3d.renderer.PointLights(location=[[0, 0.0, -4.0]], device=args.device)
+                # renderer = get_mesh_renderer(device=args.device)
+                # R, T = pytorch3d.renderer.look_at_view_transform(10, 10, 0)
+                # cameras = pytorch3d.renderer.FoVPerspectiveCameras(R, T, device=args.device)
+                # rend = renderer(mesh, cameras=cameras, lights=lights)
+                # rend = rend.detach().cpu().numpy()[0, ..., :3].clip(0,1) * 255
+                # rend = rend.astype('uint8')
+            elif args.type == 'point':
+                raise NotImplementedError
+            elif args.type == 'mesh':
+                raise NotImplementedError
+
+            # plt.imsave(f'vis/{step}_{args.type}.png', rend)
       
 
         total_time = time.time() - start_time

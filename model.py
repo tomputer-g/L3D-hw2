@@ -15,12 +15,22 @@ class SingleViewto3D(nn.Module):
             self.encoder = torch.nn.Sequential(*(list(vision_model.children())[:-1]))
             self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
 
-
         # define decoder
         if args.type == "vox":
             # Input: b x 512
             # Output: b x 32 x 32 x 32
-            pass
+            layers = []
+            layers.append(torch.nn.Linear(512, 2048))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(2048, 4096))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(4096, 8192))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(8192, 32768))
+            layers.append(torch.nn.Unflatten(1, (1,32,32,32)))
+            self.decoder = torch.nn.Sequential(*layers)
+
+            # pass
             # TODO:
             # self.decoder =             
         elif args.type == "point":
@@ -55,8 +65,11 @@ class SingleViewto3D(nn.Module):
         # call decoder
         if args.type == "vox":
             # TODO:
-            # voxels_pred =             
-            return voxels_pred
+            # voxels_pred = 
+            if not args.load_feat:
+                voxels_pred = self.decoder(encoded_feat)  
+                return voxels_pred
+            return None
 
         elif args.type == "point":
             # TODO:
