@@ -157,6 +157,8 @@ def evaluate_model(args):
     # else: # args.type == 'point':
     #     renderer = get_points_renderer(device=args.device)
 
+    IMAGE_SAVE_DIR = "../output/"
+
     max_iter = len(eval_loader)
     for step in range(start_iter, max_iter):
         iter_start_time = time.time()
@@ -175,29 +177,16 @@ def evaluate_model(args):
 
         if (step % args.vis_freq) == 0:
             # visualization block
+            plt.imsave(IMAGE_SAVE_DIR+'debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
+            render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_actual.gif", azimuth_step=1)
+
             if args.type == "vox":
-                plt.imsave('debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
-                render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path="debug_actual.gif", azimuth_step=1)
-                
                 mesh = render_vox_to_mesh(predictions.squeeze(0))
-                render_mesh_to_gif(mesh,  gif_path="debug_pred.gif", azimuth_step=1)
-                # lights = pytorch3d.renderer.PointLights(location=[[0, 0.0, -4.0]], device=args.device)
-                # renderer = get_mesh_renderer(device=args.device)
-                # R, T = pytorch3d.renderer.look_at_view_transform(10, 10, 0)
-                # cameras = pytorch3d.renderer.FoVPerspectiveCameras(R, T, device=args.device)
-                # rend = renderer(mesh, cameras=cameras, lights=lights)
-                # rend = rend.detach().cpu().numpy()[0, ..., :3].clip(0,1) * 255
-                # rend = rend.astype('uint8')
+                render_mesh_to_gif(mesh, cam_elev=30, gif_path=IMAGE_SAVE_DIR+"debug_pred_vox.gif", azimuth_step=1)
             elif args.type == 'point':
-                plt.imsave('debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
-                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=1, gif_path="debug_pred.gif")
-                render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path="debug_actual.gif", azimuth_step=1)
-
+                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_pred_point.gif")
             elif args.type == 'mesh':
-                plt.imsave('debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
-                render_mesh_to_gif(add_texture_to_mesh(predictions).to(args.device), cam_dist=2, cam_elev=1, gif_path="debug_pred.gif")
-                render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path="debug_actual.gif", azimuth_step=1)
-
+                render_mesh_to_gif(add_texture_to_mesh(predictions).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_pred_mesh.gif")
 
             # plt.imsave(f'vis/{step}_{args.type}.png', rend)
       
