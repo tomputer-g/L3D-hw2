@@ -191,8 +191,13 @@ def evaluate_model(args):
             elif args.type == 'point':
                 plt.imsave('debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
                 render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=1, gif_path="debug_pred.gif")
+                render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path="debug_actual.gif", azimuth_step=1)
+
             elif args.type == 'mesh':
-                raise NotImplementedError
+                plt.imsave('debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
+                render_mesh_to_gif(add_texture_to_mesh(predictions).to(args.device), cam_dist=2, cam_elev=1, gif_path="debug_pred.gif")
+                render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path="debug_actual.gif", azimuth_step=1)
+
 
             # plt.imsave(f'vis/{step}_{args.type}.png', rend)
       

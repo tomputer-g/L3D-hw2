@@ -59,7 +59,19 @@ class SingleViewto3D(nn.Module):
             # try different mesh initializations
             mesh_pred = ico_sphere(4, self.device)
             self.mesh_pred = pytorch3d.structures.Meshes(mesh_pred.verts_list()*args.batch_size, mesh_pred.faces_list()*args.batch_size)
+            
+            self.v_shape = mesh_pred.verts_packed().shape[0]
             # TODO:
+            layers = []
+            layers.append(torch.nn.Linear(512, 2048))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(2048, 4096))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(4096, 8192))
+            layers.append(torch.nn.GELU())
+            layers.append(torch.nn.Linear(8192, self.v_shape*3))
+            layers.append(torch.nn.Unflatten(1, (self.v_shape,3)))
+            self.decoder = torch.nn.Sequential(*layers)
             # self.decoder =             
 
     def forward(self, images, args):
@@ -93,6 +105,7 @@ class SingleViewto3D(nn.Module):
         elif args.type == "mesh":
             # TODO:
             # deform_vertices_pred =             
+            deform_vertices_pred = self.decoder(encoded_feat)
             mesh_pred = self.mesh_pred.offset_verts(deform_vertices_pred.reshape([-1,3]))
-            return  mesh_pred          
+            return mesh_pred          
 
