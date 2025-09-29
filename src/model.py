@@ -36,28 +36,23 @@ class SingleViewto3D(nn.Module):
             # self.decoder = torch.nn.Sequential(*layers)
 
             layers = []
+            layers.append(torch.nn.Unflatten(1, (8, 4, 4, 4)))
 
-            layers.append(torch.nn.Unflatten(1, (8, 4, 4, 4)))  # better latent reshape shape
-
-            # Progressive upsampling with ConvTranspose3d
-            layers.append(torch.nn.ConvTranspose3d(8, 128, kernel_size=4, stride=2, padding=1))  # 4->8
+            layers.append(torch.nn.ConvTranspose3d(8, 128, kernel_size=4, stride=2, padding=1))
             layers.append(torch.nn.BatchNorm3d(128))
             layers.append(torch.nn.GELU())
 
-            layers.append(torch.nn.ConvTranspose3d(128, 128, kernel_size=4, stride=2, padding=1))  # 8->16
+            layers.append(torch.nn.ConvTranspose3d(128, 128, kernel_size=4, stride=2, padding=1))
             layers.append(torch.nn.BatchNorm3d(128))
             layers.append(torch.nn.GELU())
 
-            layers.append(torch.nn.ConvTranspose3d(128, 64, kernel_size=4, stride=2, padding=1))  # 16->32
+            layers.append(torch.nn.ConvTranspose3d(128, 64, kernel_size=4, stride=2, padding=1))
             layers.append(torch.nn.BatchNorm3d(64))
             layers.append(torch.nn.GELU())
 
             layers.append(torch.nn.Conv3d(64, 1, kernel_size=3, padding=1))
-            
-            self.decoder = torch.nn.Sequential(*layers)
-            # pass
-            # TODO:
-            # self.decoder =             
+            layers.append(torch.nn.Sigmoid())
+            self.decoder = torch.nn.Sequential(*layers)           
         elif args.type == "point":
             # Input: b x 512
             # Output: b x args.n_points x 3  
