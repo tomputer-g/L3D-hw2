@@ -13,6 +13,7 @@ def voxel_loss(voxel_src, voxel_tgt):
 	# loss_fn = torch.nn.BCELoss(reduction='mean')
 	loss_fn = torch.nn.BCEWithLogitsLoss(reduction='mean')
 	loss = loss_fn(voxel_src, voxel_tgt)
+	# loss = loss_fn(voxel_src.clip(0,1), voxel_tgt)
 	return loss
 
 def chamfer_loss(point_cloud_src,point_cloud_tgt):

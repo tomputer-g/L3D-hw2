@@ -20,18 +20,41 @@ class SingleViewto3D(nn.Module):
             # Input: b x 512
             # Output: b x 32 x 32 x 32
 
-            # Batch size: 16
-            layers = []
-            layers.append(torch.nn.Linear(512, 2048))
-            layers.append(torch.nn.GELU())
-            layers.append(torch.nn.Linear(2048, 4096))
-            layers.append(torch.nn.GELU())
-            layers.append(torch.nn.Linear(4096, 8192))
-            layers.append(torch.nn.GELU())
-            layers.append(torch.nn.Linear(8192, 32768))
-            layers.append(torch.nn.Unflatten(1, (1,32,32,32)))
-            self.decoder = torch.nn.Sequential(*layers)
+            # Batch size: 24
+            # layers = []
+            # layers.append(torch.nn.Linear(512, 2048))
+            # layers.append(torch.nn.GELU())
+            # layers.append(torch.nn.Linear(2048, 4096))
+            # layers.append(torch.nn.GELU())
+            # layers.append(torch.nn.Linear(4096, 8192))
+            # layers.append(torch.nn.GELU())
+            # layers.append(torch.nn.Linear(8192, 8192))
+            # layers.append(torch.nn.GELU())
+            # layers.append(torch.nn.Linear(8192, 32768))
+            # layers.append(torch.nn.Unflatten(1, (1,32,32,32)))
+            # layers.append(torch.nn.Sigmoid())
+            # self.decoder = torch.nn.Sequential(*layers)
 
+            layers = []
+
+            layers.append(torch.nn.Unflatten(1, (8, 4, 4, 4)))  # better latent reshape shape
+
+            # Progressive upsampling with ConvTranspose3d
+            layers.append(torch.nn.ConvTranspose3d(8, 128, kernel_size=4, stride=2, padding=1))  # 4->8
+            layers.append(torch.nn.BatchNorm3d(128))
+            layers.append(torch.nn.GELU())
+
+            layers.append(torch.nn.ConvTranspose3d(128, 128, kernel_size=4, stride=2, padding=1))  # 8->16
+            layers.append(torch.nn.BatchNorm3d(128))
+            layers.append(torch.nn.GELU())
+
+            layers.append(torch.nn.ConvTranspose3d(128, 64, kernel_size=4, stride=2, padding=1))  # 16->32
+            layers.append(torch.nn.BatchNorm3d(64))
+            layers.append(torch.nn.GELU())
+
+            layers.append(torch.nn.Conv3d(64, 1, kernel_size=3, padding=1))
+            
+            self.decoder = torch.nn.Sequential(*layers)
             # pass
             # TODO:
             # self.decoder =             
@@ -94,6 +117,7 @@ class SingleViewto3D(nn.Module):
             # voxels_pred = 
             if not args.load_feat:
                 voxels_pred = self.decoder(encoded_feat)  
+                # print(voxels_pred.shape)
                 return voxels_pred
             return None
 

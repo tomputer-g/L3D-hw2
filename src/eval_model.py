@@ -90,6 +90,7 @@ def evaluate(predictions, mesh_gt, thresholds, args):
     if args.type == "vox":
         voxels_src = predictions
         H,W,D = voxels_src.shape[2:]
+        print(voxels_src.max())
         vertices_src, faces_src = mcubes.marching_cubes(voxels_src.detach().cpu().squeeze().numpy(), isovalue=0.5)
         vertices_src = torch.tensor(vertices_src).float()
         faces_src = torch.tensor(faces_src.astype(int))
@@ -177,16 +178,17 @@ def evaluate_model(args):
 
         if (step % args.vis_freq) == 0:
             # visualization block
-            plt.imsave(IMAGE_SAVE_DIR+'debug_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
-            render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_actual.gif", azimuth_step=1)
+            plt.imsave(IMAGE_SAVE_DIR+'debug_'+str(step)+'_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
+            render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_"+str(step)+"_actual.gif", azimuth_step=1)
 
             if args.type == "vox":
                 mesh = render_vox_to_mesh(predictions.squeeze(0))
-                render_mesh_to_gif(mesh, cam_elev=30, gif_path=IMAGE_SAVE_DIR+"debug_pred_vox.gif", azimuth_step=1)
+                # print(mesh._verts_list[0])
+                render_mesh_to_gif(mesh, cam_elev=30, gif_path=IMAGE_SAVE_DIR+"debug_pred_"+str(step)+"_vox.gif", azimuth_step=1)
             elif args.type == 'point':
-                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_pred_point.gif")
+                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_pred_"+str(step)+"_point.gif")
             elif args.type == 'mesh':
-                render_mesh_to_gif(add_texture_to_mesh(predictions).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_pred_mesh.gif")
+                render_mesh_to_gif(add_texture_to_mesh(predictions).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"debug_pred_"+str(step)+"_mesh.gif")
 
             # plt.imsave(f'vis/{step}_{args.type}.png', rend)
       
