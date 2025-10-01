@@ -46,13 +46,13 @@ def get_color_pointcloud(pointcloud: torch.Tensor):
     return torch.ones_like(pointcloud).to(pointcloud.device) * torch.tensor([0.7,0.7,1], device=pointcloud.device)
 
 
-def render_vox_to_mesh(vox: torch.Tensor): # -> pytorch3d.structures.Meshes:
+def render_vox_to_mesh(vox: torch.Tensor, isovalue: float = 0.5): # -> pytorch3d.structures.Meshes:
     # print(vox.shape) #1, 32, 32, 32
     # H,W,D = vox.shape[1:]
     # voxel_size=32
     # min_value=-16
     # max_value=16
-    vertices_src, faces_src = mcubes.marching_cubes(vox.detach().cpu().squeeze().numpy(), isovalue=0.5) #0.5
+    vertices_src, faces_src = mcubes.marching_cubes(vox.detach().cpu().squeeze().numpy(), isovalue=isovalue) #0.5
     vertices_src = torch.tensor(vertices_src).float()
     # vertices_src = (vertices_src / voxel_size) * (max_value - min_value) + min_value
 
