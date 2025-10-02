@@ -48,7 +48,7 @@ def add_texture_to_mesh(mesh: pytorch3d.structures.Meshes):
         torch.zeros_like(z),
         z_norm
     ], dim=1)
-    
+
     textures = colors
     mesh.textures = TexturesVertex([textures]).to(verts.device)
     return mesh
@@ -68,18 +68,22 @@ def get_color_pointcloud(pointcloud: torch.Tensor):
 
 def render_vox_to_mesh(vox: torch.Tensor, isovalue: float = 0.5): # -> pytorch3d.structures.Meshes:
     # print(vox.shape) #1, 32, 32, 32
+    # vox *= (1.0 / 32.0)
+    # vox -= 0.5
+    # print(vox.shape) #32, 32, 32
     # H,W,D = vox.shape[1:]
     # voxel_size=32
     # min_value=-16
     # max_value=16
     vertices_src, faces_src = mcubes.marching_cubes(vox.detach().cpu().squeeze().numpy(), isovalue=isovalue) #0.5
+
     vertices_src = torch.tensor(vertices_src).float()
+    vertices_src = (vertices_src - torch.Tensor([16, 16, 16])) * (1.0 / 32.0)  # center the mesh at (0,0,0) and scale to [-0.5, 0.5]
     # vertices_src = (vertices_src / voxel_size) * (max_value - min_value) + min_value
 
     faces_src = torch.tensor(faces_src.astype(int))
-    textures = torch.ones_like(vertices_src)  # (1, N_v, 3)
-    textures = textures * torch.tensor([0.7, 0.7, 1])  # (1, N_v, 3)
-    mesh_src = pytorch3d.structures.Meshes([vertices_src], [faces_src], TexturesVertex([textures])).to(vox.device)
+    mesh_src = pytorch3d.structures.Meshes([vertices_src], [faces_src]).to(vox.device)
+    mesh_src = add_texture_to_mesh(mesh_src)
     return mesh_src
 
 def get_mesh_renderer(image_size=512, lights=None, device='cuda'):

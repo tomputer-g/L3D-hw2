@@ -152,13 +152,6 @@ def evaluate_model(args):
     
     print("Starting evaluating !")
 
-    # # Rendering stuff
-    
-    # if args.type == "vox" or args.type == 'mesh':
-    #     renderer = get_mesh_renderer(device=args.device)
-    # else: # args.type == 'point':
-    #     renderer = get_points_renderer(device=args.device)
-
     IMAGE_SAVE_DIR = "../output/"
 
     max_iter = len(eval_loader)
@@ -177,23 +170,23 @@ def evaluate_model(args):
 
         metrics = evaluate(predictions, mesh_gt, thresholds, args)
 
-        if (step % args.vis_freq) == 0:
+        if args.vis_freq > 0 and (step % args.vis_freq) == 0:
             if args.type == "vox":
                 mesh = render_vox_to_mesh(predictions.squeeze(0))
                 # print(mesh._verts_list[0])
-                render_mesh_to_gif(mesh, cam_elev=30, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_vox.gif", azimuth_step=1)
+                render_mesh_to_gif(mesh, cam_dist=2, cam_elev=10,  gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_vox.gif", azimuth_step=10)
                 if args.question_2_6:
                     isovalues = [10, 30, 50, 70, 90]
                     for isovalue in isovalues:
                         mesh = render_vox_to_mesh(predictions.squeeze(0), isovalue=isovalue/100)
-                        render_mesh_to_gif(mesh, cam_elev=30, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_vox_iso_"+str(isovalue)+".gif", azimuth_step=1)
+                        render_mesh_to_gif(mesh, cam_dist=2, cam_elev=10, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_vox_iso_"+str(isovalue)+".gif", azimuth_step=10)
             elif args.type == 'point':
-                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=5, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_point.gif", azimuth_step=1)
+                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=10, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_point.gif", azimuth_step=10)
             elif args.type == 'mesh':
-                render_mesh_to_gif(add_texture_to_mesh(predictions).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_mesh.gif")
+                render_mesh_to_gif(add_texture_to_mesh(predictions).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_mesh.gif", azimuth_step=10)
             # Visualize ground truth
             plt.imsave(IMAGE_SAVE_DIR+str(step)+'_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
-            render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+str(step)+"_actual.gif", azimuth_step=1)
+            render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=10, gif_path=IMAGE_SAVE_DIR+str(step)+"_actual.gif", azimuth_step=10)
 
 
         total_time = time.time() - start_time
