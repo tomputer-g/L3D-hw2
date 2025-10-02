@@ -19,7 +19,7 @@ from utils import render_vox_to_mesh, render_mesh_to_gif, add_texture_to_mesh, r
 def get_args_parser():
     parser = argparse.ArgumentParser('Singleto3D', add_help=False)
     parser.add_argument('--arch', default='resnet18', type=str)
-    parser.add_argument('--vis_freq', default=200, type=int)
+    parser.add_argument('--vis_freq', default=100, type=int)
     parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--num_workers', default=0, type=int)
     parser.add_argument('--type', default='vox', choices=['vox', 'point', 'mesh'], type=str)
@@ -178,10 +178,6 @@ def evaluate_model(args):
         metrics = evaluate(predictions, mesh_gt, thresholds, args)
 
         if (step % args.vis_freq) == 0:
-            # visualization block
-            plt.imsave(IMAGE_SAVE_DIR+str(step)+'_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
-            render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+str(step)+"_actual.gif", azimuth_step=1)
-
             if args.type == "vox":
                 mesh = render_vox_to_mesh(predictions.squeeze(0))
                 # print(mesh._verts_list[0])
@@ -192,9 +188,13 @@ def evaluate_model(args):
                         mesh = render_vox_to_mesh(predictions.squeeze(0), isovalue=isovalue/100)
                         render_mesh_to_gif(mesh, cam_elev=30, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_vox_iso_"+str(isovalue)+".gif", azimuth_step=1)
             elif args.type == 'point':
-                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_point.gif")
+                render_pointcloud_to_gif(V=predictions, rgb=get_color_pointcloud(predictions), cam_dist=2, cam_elev=5, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_point.gif", azimuth_step=1)
             elif args.type == 'mesh':
                 render_mesh_to_gif(add_texture_to_mesh(predictions).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+"pred_"+str(step)+"_mesh.gif")
+            # Visualize ground truth
+            plt.imsave(IMAGE_SAVE_DIR+str(step)+'_rgb.png', images_gt[0].cpu().numpy().clip(0,1))
+            render_mesh_to_gif(add_texture_to_mesh(mesh_gt).to(args.device), cam_dist=2, cam_elev=1, gif_path=IMAGE_SAVE_DIR+str(step)+"_actual.gif", azimuth_step=1)
+
 
         total_time = time.time() - start_time
         iter_time = time.time() - iter_start_time

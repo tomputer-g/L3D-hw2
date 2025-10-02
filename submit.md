@@ -26,6 +26,14 @@ TODO Visualize three examples (input RGB, predicted voxel, ground truth mesh)
 
 ## 2.2. Image to Point Cloud
 
+Three examples of input images, ground truth meshes, and predicted point clouds are shown below with n_points = 10000. The average F1@0.05 score is 85.
+
+| Input Image | Ground Truth Mesh | Predicted Point Cloud |
+|-------------|------------------|----------------------|
+| <image src="submit_images/q2/point/0_rgb.png" width=256> | <image src="submit_images/q2/point/0_actual.gif" width=256> | <image src="submit_images/q2/point/pred_0_point.gif" width=256> |
+| <image src="submit_images/q2/point/100_rgb.png" width=256> | <image src="submit_images/q2/point/100_actual.gif" width=256> | <image src="submit_images/q2/point/pred_100_point.gif" width=256> |
+| <image src="submit_images/q2/point/200_rgb.png" width=256> | <image src="submit_images/q2/point/200_actual.gif" width=256> | <image src="submit_images/q2/point/pred_200_point.gif" width=256> |
+
 TODO Visualize three examples (input RGB, predicted point cloud, ground truth mesh)
 
 ## 2.3 Image to Mesh
@@ -36,11 +44,11 @@ TODO Visualize three examples (input RGB, predicted mesh, ground truth mesh)
 
 Here are the F1 score curves of the three different modalities:
 
-<image src="submit_images/q2/eval_vox.png" width=512>
+<image src="submit_images/q2/F1/eval_vox.png" width=512>
 
-<image src="submit_images/q2/eval_point_10k.png" width=512>
+<image src="submit_images/q2/F1/eval_point_10k.png" width=512>
 
-<image src="submit_images/q2/eval_mesh.png" width=512>
+<image src="submit_images/q2/F1/eval_mesh.png" width=512>
 
 Quantitatively, we see that the point cloud method yields the best F1 score out of the three modalities, followed by voxels and finally mesh. TODO talk more abt this
 
@@ -51,13 +59,13 @@ TODO load checkpoints and talk about actual score
 I chose to experiment with the `n_points` parameter for the point cloud model, between 1k, 5k, and 10k points. Here are the F1 score curves:
 
 1K:
-<image src="submit_images/q2/eval_point_1k.png" width=512>
+<image src="submit_images/q2/F1/eval_point_1k.png" width=512>
 
 5K:
-<image src="submit_images/q2/eval_point_5k.png" width=512>
+<image src="submit_images/q2/F1/eval_point_5k.png" width=512>
 
 10K:
-<image src="submit_images/q2/eval_point_10k.png" width=512>
+<image src="submit_images/q2/F1/eval_point_10k.png" width=512>
 
 The loss increases proportionally with the number of points, which is expected due to the chamfer loss being calculated per each point. 
 

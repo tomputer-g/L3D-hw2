@@ -38,13 +38,33 @@ def add_texture_to_mesh(mesh: pytorch3d.structures.Meshes):
         pytorch3d.structures.Meshes: Mesh with vertex textures.
     """
     verts = mesh.verts_list()[0]
-    textures = torch.ones_like(verts) * torch.tensor([0.7, 0.7, 1], device=verts.device)
+
+    z = verts[:, 2]
+    z_min, z_max = z.min(), z.max()
+    z_norm = (z - z_min) / (z_max - z_min + 1e-8)
+
+    colors = torch.stack([
+        1 - z_norm,         
+        torch.zeros_like(z),
+        z_norm
+    ], dim=1)
+    
+    textures = colors
     mesh.textures = TexturesVertex([textures]).to(verts.device)
     return mesh
 
 def get_color_pointcloud(pointcloud: torch.Tensor):
-    return torch.ones_like(pointcloud).to(pointcloud.device) * torch.tensor([0.7,0.7,1], device=pointcloud.device)
+    z = pointcloud[0, :, 2]
+    z_min, z_max = z.min(), z.max()
+    z_norm = (z - z_min) / (z_max - z_min + 1e-8)
 
+    colors = torch.stack([
+        1 - z_norm,         
+        torch.zeros_like(z),
+        z_norm
+    ], dim=1)[None, ...].to(pointcloud.device)
+
+    return colors
 
 def render_vox_to_mesh(vox: torch.Tensor, isovalue: float = 0.5): # -> pytorch3d.structures.Meshes:
     # print(vox.shape) #1, 32, 32, 32
@@ -136,6 +156,7 @@ def render_pointcloud_to_gif(
     cam_dist: float = 60,
     cam_elev: float = 10,
     device:str = "cuda",
+    azimuth_step: int = 10,
     background_color=(1, 1, 1),
     downsample_factor=1,
     image_size=512,
@@ -152,7 +173,7 @@ def render_pointcloud_to_gif(
     point_cloud = pytorch3d.structures.Pointclouds(points=verts, features=rgb)
     
     image_list = []
-    for azimuth in tqdm(range(0, 360, 10), desc="Rendering pointcloud..."): 
+    for azimuth in tqdm(range(0, 360, azimuth_step), desc="Rendering pointcloud..."): 
         R, T = pytorch3d.renderer.look_at_view_transform(cam_dist, cam_elev, azimuth)
         cameras = pytorch3d.renderer.FoVPerspectiveCameras(R=R, T=T, device=device)
         rend = renderer(point_cloud, cameras=cameras)
